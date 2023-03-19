@@ -10,10 +10,11 @@ mod service;
 use log::debug;
 use router::root;
 use settings::Settings;
-use actix_web::{http::header, App, HttpServer, middleware::Logger, web::Data};
+use actix_web::{App, HttpServer, middleware::Logger, web::Data};
 use actix_cors::Cors;
 use dotenv::dotenv;
 use crate::service::jwt;
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -30,13 +31,14 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         let logger = Logger::default();
+        let cors = Cors::permissive();
 
-        let cors = Cors::default()            
-            .allow_any_origin()
-            .allowed_methods(vec!["GET", "POST"])
-            .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
-            .allowed_header(header::CONTENT_TYPE)
-            .max_age(3600);  
+        // let cors = Cors::default()            
+        //     .allow_any_origin()
+        //     .allowed_methods(vec!["GET", "POST"])
+        //     .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
+        //     .allowed_header(header::CONTENT_TYPE)
+        //     .max_age(3600);  
 
         App::new()
             .wrap(logger)

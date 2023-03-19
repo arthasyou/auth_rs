@@ -1,0 +1,1 @@
+const INVALID_TOKEN: &str = "invalid token";
