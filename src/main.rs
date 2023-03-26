@@ -7,7 +7,7 @@ mod settings;
 mod error;
 mod service;
 
-use log::debug;
+// use log::debug;
 use router::root;
 use settings::Settings;
 use actix_web::{App, HttpServer, middleware::Logger, web::Data};

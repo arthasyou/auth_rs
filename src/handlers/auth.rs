@@ -1,8 +1,8 @@
-use std::str::FromStr;
 
-use actix_web::{post, web::{Json, Data}, Result, HttpRequest, HttpResponse };
+
+use actix_web::{post, web::Data, Result, HttpRequest, HttpResponse };
 // use log::debug;
-use crate::{models::{json_response, json_response_empty}, models::{user::*}, db::mongodb::MongoDB, service::jwt};
+use crate::{models::json_response, models::{user::*}, db::mongodb::MongoDB, service::jwt};
 // use validator::Validate;
 use mongodb::bson::doc;
 use crate::service::header::{ parse_oid, parse_oid_string };

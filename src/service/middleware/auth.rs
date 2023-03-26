@@ -1,7 +1,7 @@
 use std::future::{ready, Ready};
 
 use actix_web::{
-    HttpMessage, HttpRequest, HttpResponse, http::header,
+    HttpMessage, 
     dev::{ self, Service, ServiceRequest, ServiceResponse, Transform },
     Error, 
     

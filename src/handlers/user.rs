@@ -62,15 +62,3 @@ async fn get_all(db: Data<MongoDB>) -> Result<HttpResponse> {
             json_response_empty()
      }
 }
-
-
-async fn hash_password(db: Data<MongoDB>) -> Result<HttpResponse> {
-    json_response_empty()
-}
-
-async fn verify_password(db: Data<MongoDB>) -> Result<HttpResponse> {
-    json_response_empty()
-}
-
-
-

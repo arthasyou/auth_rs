@@ -12,8 +12,6 @@ use mongodb::bson::oid::ObjectId;
 
 
 pub fn parse_token(req: &ServiceRequest) -> Result<String> {
-    let a = req.path();
-    
     let header = req.headers().get(header::AUTHORIZATION)
         .ok_or(error::ErrorUnauthorized("Authorization header required"))?;
 
