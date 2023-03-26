@@ -1,4 +1,4 @@
-pub mod user_model;
+pub mod user;
 
 use serde::{Serialize};
 use actix_web::{HttpResponse, http::header::ContentType, Result};

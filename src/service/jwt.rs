@@ -22,18 +22,40 @@ impl Claims {
     }
 }
 
-pub enum TokenKind {
+enum TokenKind {
     ACCESS,
     REFRESH
 }
 
+/// ==========================================================================================
+
+pub fn general_token_pair(sub: String) -> (String, String) {
+    let access_token = general_token(TokenKind::ACCESS, sub.clone());
+    let refresh_token = general_token(TokenKind::REFRESH, sub);
+    (access_token, refresh_token)
+}
+
+pub fn general_access_token(sub: String) -> String {
+    general_token(TokenKind::ACCESS, sub)
+}
+
+pub fn validate_access_token(token: &str) -> Result<TokenData<Claims>, Error>  {
+    validate_token(TokenKind::ACCESS, token)
+}
+
+pub fn validate_refresh_token(token: &str) -> Result<TokenData<Claims>, Error>  {
+    validate_token(TokenKind::REFRESH, token)
+}
+
+
+
 // ==========================================================================================
-pub fn general_expired_time(duration: usize) -> usize {
+fn general_expired_time(duration: usize) -> usize {
     let exp = Utc::now() + Duration::seconds(duration as i64);
     exp.timestamp() as usize
 }
 
-pub fn general_token(kind: TokenKind, sub: String) -> String {
+fn general_token(kind: TokenKind, sub: String) -> String {
     unsafe {
         let jwt = JWT_STRUCT.as_ptr();
         let aud = (*jwt).aud.clone();
@@ -52,7 +74,7 @@ pub fn general_token(kind: TokenKind, sub: String) -> String {
     }    
 }
 
-pub fn validate_token(kind: TokenKind, token: &str) -> Result<TokenData<Claims>, Error> {
+fn validate_token(kind: TokenKind, token: &str) -> Result<TokenData<Claims>, Error> {
     unsafe {
         let jwt = JWT_STRUCT.as_ptr();
         let (key, validation) = match kind {

@@ -5,7 +5,7 @@ use user_router::*;
 use auth_router::*;
 
 use actix_web::{web::{ServiceConfig, scope}};
-use crate::service::middleware::auth_middleware::Auth;
+use crate::service::middleware::auth::Auth;
 
 pub fn root(cfg: &mut ServiceConfig) {
     cfg

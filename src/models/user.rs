@@ -4,20 +4,17 @@ use serde::{Serialize, Deserialize};
 use validator::Validate;
 use mongodb::{bson::{oid::ObjectId}};
 
-#[derive(Debug, Serialize, Deserialize, Validate)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct User {
     #[serde(rename = "_id")]        // use MongoDB _id as primary key
     pub id: Option<ObjectId>,
     pub username: String,
-    pub psssword_hash: String,
+    // pub psssword_hash: String,    
     pub email: String,
+    pub password: String,
     pub phone: String,
-    pub token: String,
-    pub refresh_token: String,
-    pub user_id: Uuid,
-    pub user_type: UserType,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime
+    // pub created_at: NaiveDateTime,
+    // pub updated_at: NaiveDateTime
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -36,6 +33,18 @@ pub struct NewUser {
     pub password: String,
     #[validate(length(min = 6, max = 20))]
     pub phone: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Login {
+    pub account: String,
+    pub password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LoginRespon {
+    pub access: String,
+    pub refresh: String,
 }
 
 #[derive(Debug, Deserialize, Validate)]

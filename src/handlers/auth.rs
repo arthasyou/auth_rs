@@ -1,0 +1,28 @@
+use std::str::FromStr;
+
+use actix_web::{post, web::{Json, Data}, Result, HttpRequest, HttpResponse };
+// use log::debug;
+use crate::{models::{json_response, json_response_empty}, models::{user::*}, db::mongodb::MongoDB};
+// use validator::Validate;
+use mongodb::bson::doc;
+use crate::service::header::parse_oid;
+
+
+#[post("/test")]
+pub async fn test(req: HttpRequest, db: Data<MongoDB>) -> Result<HttpResponse> {
+    let oid = parse_oid(&req);
+    let doc = doc! { "_id": &oid };
+    println!("{:?}", doc);
+    match db.find_one::<User>("user", doc).await {
+        Ok(Some(user)) => {            
+            json_response(&user)
+        }            
+        Err(err) => {
+            println!("{:?}", err);
+            Ok(HttpResponse::BadRequest().json(err.to_string()))
+        }
+        _ => Ok(HttpResponse::BadRequest().json("invalid account".to_string()))
+
+    }
+}
+
