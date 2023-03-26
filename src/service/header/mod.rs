@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::service::jwt::{ validate_access_token };
+use crate::service::jwt::{ validate_access_token, validate_refresh_token };
 use actix_web::{
     HttpRequest, HttpMessage,
     dev::ServiceRequest,
@@ -12,6 +12,8 @@ use mongodb::bson::oid::ObjectId;
 
 
 pub fn parse_token(req: &ServiceRequest) -> Result<String> {
+    let a = req.path();
+    
     let header = req.headers().get(header::AUTHORIZATION)
         .ok_or(error::ErrorUnauthorized("Authorization header required"))?;
 
@@ -24,14 +26,23 @@ pub fn parse_token(req: &ServiceRequest) -> Result<String> {
     let token = parts.next()
         .ok_or(error::ErrorUnauthorized("Invalid Authorization Token"))?;
 
-    match validate_access_token(token) {
+    let result = match req.path() {
+        "/auth/refresh" => validate_refresh_token(token),
+        _ => validate_access_token(token)
+    };
+
+    match result {
         Ok(data) => Ok(data.claims.sub),
         _ => return Err(error::ErrorUnauthorized("Invalid Authorization Token"))
     }
 }
 
 pub fn parse_oid(req: &HttpRequest) -> ObjectId {
-    let sub = req.extensions().get::<String>().unwrap().clone();
+    let sub = parse_oid_string(req);
     ObjectId::from_str(&sub).unwrap()
+}
+
+pub fn parse_oid_string(req: &HttpRequest) -> String {
+    req.extensions().get::<String>().unwrap().clone()    
 }
 

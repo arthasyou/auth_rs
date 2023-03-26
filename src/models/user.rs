@@ -47,6 +47,11 @@ pub struct LoginRespon {
     pub refresh: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AccessToken {
+    pub token: String,
+}
+
 #[derive(Debug, Deserialize, Validate)]
 pub struct UpdateProfile {
     pub full_name: Option<String>,

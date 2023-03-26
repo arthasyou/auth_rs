@@ -2,10 +2,10 @@ use std::str::FromStr;
 
 use actix_web::{post, web::{Json, Data}, Result, HttpRequest, HttpResponse };
 // use log::debug;
-use crate::{models::{json_response, json_response_empty}, models::{user::*}, db::mongodb::MongoDB};
+use crate::{models::{json_response, json_response_empty}, models::{user::*}, db::mongodb::MongoDB, service::jwt};
 // use validator::Validate;
 use mongodb::bson::doc;
-use crate::service::header::parse_oid;
+use crate::service::header::{ parse_oid, parse_oid_string };
 
 
 #[post("/test")]
@@ -26,3 +26,9 @@ pub async fn test(req: HttpRequest, db: Data<MongoDB>) -> Result<HttpResponse> {
     }
 }
 
+#[post("/refresh")]
+pub async fn refresh_token(req: HttpRequest) -> Result<HttpResponse> {
+    let oid = parse_oid_string(&req);
+    let token = jwt::general_access_token(oid);
+    json_response(&AccessToken{token})
+}
