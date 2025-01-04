@@ -1,64 +1,56 @@
-use actix_web::{post, web::{Json, Data}, Result, HttpResponse};
-use log::debug;
-use crate::{models::{json_response, json_response_empty}, models::{user::*}, db::mongodb::MongoDB};
-use validator::Validate;
-use mongodb::{ bson::doc };
-use crate::service::jwt;
+use crate::models::CommonResponse;
+use actix_web::get;
+use actix_web::{post, web::Data, HttpRequest, HttpResponse, Result};
+// use log::debug;
+use crate::{db::mongodb::MongoDB, models::json_response, models::user::*, service::jwt};
+// use validator::Validate;
+use crate::service::header::{parse_oid, parse_oid_string};
+use mongodb::bson::doc;
 
-
-#[post("/signup")]
-async fn sign_up(new_user: Json<NewUser>, db: Data<MongoDB>) -> Result<HttpResponse> {
-    match new_user.validate() {
-        Ok(_) => {           
-            let new_user = new_user.into_inner();
-            db.insert_one("user", new_user).await.unwrap();
-            json_response_empty()
-        },
-        Err(err) => {
-            debug!("{:?}", err);
-            Ok(HttpResponse::BadRequest().json(err.to_string()))
-        }
-    }    
-}
-
-#[post("/login")]
-async fn login(login: Json<Login>, db: Data<MongoDB>) -> Result<HttpResponse> {
-    let doc = doc! { "email": &login.account };
+#[post("/test")]
+pub async fn test(req: HttpRequest, db: Data<MongoDB>) -> Result<HttpResponse> {
+    let oid = parse_oid(&req);
+    let doc = doc! { "_id": &oid };
     println!("{:?}", doc);
     match db.find_one::<User>("user", doc).await {
-        Ok(Some(user)) => {
-            let (a, r) = jwt::general_token_pair(user.id.unwrap().to_string());
-            let res = LoginRespon{ access:a, refresh:r };
-            json_response(&res)
-        }            
+        Ok(Some(user)) => json_response(&user),
         Err(err) => {
             println!("{:?}", err);
             Ok(HttpResponse::BadRequest().json(err.to_string()))
         }
-        _ => Ok(HttpResponse::BadRequest().json("invalid account".to_string()))
-
+        _ => Ok(HttpResponse::BadRequest().json("invalid account".to_string())),
     }
 }
 
-#[post("/get")]
-async fn get_user(db: Data<MongoDB>) -> Result<HttpResponse> {
-    let doc = doc! {"email": "abc@163com"};
-    println!("{:?}", doc);
-    match db.find_one::<NewUser>("user", doc).await {
-        Ok(Some(user)) =>
-            json_response(&user),
-        _ =>
-            json_response_empty()
-     }
+#[get("/info")]
+pub async fn info(_req: HttpRequest) -> Result<HttpResponse> {
+    let user = UserInfo {
+        roles: vec![],
+        real_name: "admin".to_string(),
+    };
+    let res = CommonResponse {
+        code: 0,
+        data: user.into_json(),
+        message: "success".to_string(),
+    };
+    json_response(&res)
+
+    // let oid = parse_oid(&req);
+    // let doc = doc! { "_id": &oid };
+    // println!("{:?}", doc);
+    // match db.find_one::<User>("user", doc).await {
+    //     Ok(Some(user)) => json_response(&user),
+    //     Err(err) => {
+    //         println!("{:?}", err);
+    //         Ok(HttpResponse::BadRequest().json(err.to_string()))
+    //     }
+    //     _ => Ok(HttpResponse::BadRequest().json("invalid account".to_string())),
+    // }
 }
 
-#[post("/get_all")]
-async fn get_all(db: Data<MongoDB>) -> Result<HttpResponse> {
-    let mut users: Vec<NewUser> = vec![];
-    match db.find("user", None, None, &mut users) .await {
-        Ok(()) =>
-            json_response(&users),
-        _ =>
-            json_response_empty()
-     }
+#[post("/refresh")]
+pub async fn refresh_token(req: HttpRequest) -> Result<HttpResponse> {
+    let oid = parse_oid_string(&req);
+    let token = jwt::general_access_token(oid);
+    json_response(&AccessToken { token })
 }

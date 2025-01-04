@@ -1,24 +1,22 @@
 // use chrono::{NaiveDateTime};
 // use uuid::Uuid;
-use serde::{Serialize, Deserialize};
+use mongodb::bson::oid::ObjectId;
+use serde::{Deserialize, Serialize};
 use validator::Validate;
-use mongodb::{bson::{oid::ObjectId}};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
-    #[serde(rename = "_id")]        // use MongoDB _id as primary key
+    #[serde(rename = "_id")] // use MongoDB _id as primary key
     pub id: Option<ObjectId>,
     pub username: String,
-    // pub psssword_hash: String,    
-    pub email: String,
+    // pub psssword_hash: String,
     pub password: String,
-    pub phone: String,
     // pub created_at: NaiveDateTime,
     // pub updated_at: NaiveDateTime
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum UserType {    
+pub enum UserType {
     User = 1,
     Admin = 2,
 }
@@ -27,24 +25,26 @@ pub enum UserType {
 pub struct NewUser {
     #[validate(length(min = 1, max = 20))]
     pub username: String,
-    #[validate(email)]
-    pub email: String,
-    #[validate(length(min = 6, max = 20))]
     pub password: String,
-    #[validate(length(min = 6, max = 20))]
-    pub phone: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Login {
-    pub account: String,
+    pub username: String,
     pub password: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginRespon {
-    pub access: String,
+    #[serde(rename = "accessToken")]
+    pub access_token: String,
     pub refresh: String,
+}
+
+impl LoginRespon {
+    pub fn into_json(self) -> serde_json::Value {
+        serde_json::to_value(self).unwrap() // 将 LoginRespon 转换为 serde_json::Value
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -57,5 +57,18 @@ pub struct UpdateProfile {
     pub full_name: Option<String>,
     pub bio: Option<String>,
     #[validate(url)]
-    pub image: Option<String>
+    pub image: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserInfo {
+    pub roles: Vec<String>,
+    #[serde(rename = "realName")]
+    pub real_name: String,
+}
+
+impl UserInfo {
+    pub fn into_json(self) -> serde_json::Value {
+        serde_json::to_value(self).unwrap() // 将 LoginRespon 转换为 serde_json::Value
+    }
 }
